@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/nlopes/slack"
 	"log"
 	"net/http"
 	"net/url"
@@ -12,12 +13,16 @@ import (
 
 var (
 	slackToken     string
+	slackApiToken  string
 	commandPattern *regexp.Regexp
 )
 
 func main() {
 	slackToken = os.Getenv("SLACK_TOKEN")
 	log.Printf("Using Slack token: %s", slackToken)
+
+	slackApiToken = os.Getenv("SLACK_API_TOKEN")
+	log.Printf("Using Slack API token: %s", slackApiToken)
 
 	commandPattern = regexp.MustCompile(`^\s*#([\w-]+)\s*$`)
 
@@ -40,6 +45,8 @@ func hook(res http.ResponseWriter, req *http.Request) {
 				if commandPattern.MatchString(text) {
 					channelName := commandPattern.FindStringSubmatch(text)[1]
 					fmt.Fprintf(res, "{\"text\": \"Redirecting conversation to #%s\"}", channelName)
+
+					sendRedirect(msg["channel_id"][0], channelName)
 				} else {
 					fmt.Fprintf(res, "{\"text\": \"Usage: /redirect #channel-name\"}")
 				}
@@ -58,4 +65,20 @@ func parseRequest(req *http.Request) map[string][]string {
 		return nil
 	}
 	return msg
+}
+
+func sendRedirect(channelId string, channelName string) {
+	api := slack.New(slackApiToken)
+	params := slack.PostMessageParameters{}
+	attachment := slack.Attachment{
+		Pretext: "some pretext",
+		Text:    "some text",
+	}
+	params.Attachments = []slack.Attachment{attachment}
+	channelId, timestamp, err := api.PostMessage(channelName, "Some text", params)
+	if err != nil {
+		log.Printf("%s\n", err)
+		return
+	}
+	fmt.Printf("Message successfully sent to channel %s at %s", channelId, timestamp)
 }
