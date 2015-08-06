@@ -86,7 +86,7 @@ func sendRedirectImage(targetChannelId string) {
 	attachment.ImageURL = "https://coonbot.herokuapp.com/anotherchannel.jpg"
 
 	params.Attachments = []slack.Attachment{attachment}
-	actualChannelId, timestamp, err := slackApi.PostMessage(targetChannelId, "Thank you for keeping our channels safe.", params)
+	actualChannelId, timestamp, err := slackApi.PostMessage(targetChannelId, "{\"text\":\"Thank you for keeping our channels safe.\"}", params)
 	if err != nil {
 		log.Printf("Failed to post image to channel: %s\n", err)
 		return
