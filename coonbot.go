@@ -82,12 +82,14 @@ func sendRedirect(targetChannelId string, channelName string) {
 	params.Username = "coonbot"
 	params.IconURL = "https://coonbot.herokuapp.com/raccoon.png"
 
-	attachment := slack.Attachment{
-		Pretext: "some pretext",
-		Text:    "some text",
-	}
+	attachment := slack.Attachment{}
+	attachment.Fallback = "You're having a conversation that's best had in another channel."
+	attachment.ImageURL = "https://coonbot.herokuapp.com/anotherchannel.png"
+	attachment.ThumbURL = "https://coonbot.herokuapp.com/raccoon.png"
+	attachment.Text = ":rage:"
+
 	params.Attachments = []slack.Attachment{attachment}
-	actualChannelId, timestamp, err := api.PostMessage(targetChannelId, fmt.Sprint(":door: :arrow_right: #%s", channelName), params)
+	actualChannelId, timestamp, err := api.PostMessage(targetChannelId, fmt.Sprintf(":door::arrow_right: #%s", channelName), params)
 	if err != nil {
 		log.Printf("%s\n", err)
 		return
