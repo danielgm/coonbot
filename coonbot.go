@@ -80,14 +80,13 @@ func parseRequest(req *http.Request) map[string][]string {
 
 func sendRedirectImage(targetChannelId string) {
 	params := getPostMessageParameters()
-	params.EscapeText = false
 
 	attachment := slack.Attachment{}
 	attachment.Fallback = "You're having a conversation that's best had in another channel."
 	attachment.ImageURL = "https://coonbot.herokuapp.com/anotherchannel.jpg"
 
 	params.Attachments = []slack.Attachment{attachment}
-	actualChannelId, timestamp, err := slackApi.PostMessage(targetChannelId, "", params)
+	actualChannelId, timestamp, err := slackApi.PostMessage(targetChannelId, "Thank you for keeping our channels safe.", params)
 	if err != nil {
 		log.Printf("Failed to post image to channel: %s\n", err)
 		return
