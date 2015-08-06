@@ -28,7 +28,7 @@ func main() {
 	commandPattern = regexp.MustCompile(`^\s*#([\w-]+)\s*$`)
 
 	chttp = http.NewServeMux()
-	http.Handle("/", http.FileServer(http.Dir("./")))
+	chttp.Handle("/", http.FileServer(http.Dir("./")))
 
 	http.HandleFunc("/", handler)
 	log.Println("Waiting for slash command...")
