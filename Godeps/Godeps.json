@@ -1,5 +1,15 @@
 {
 	"ImportPath": "github.com/danielgm/coonbot",
 	"GoVersion": "go1.4.2",
-	"Deps": []
+	"Deps": [
+		{
+			"ImportPath": "github.com/nlopes/slack",
+			"Comment": "v0.0.1-8-gd082c80",
+			"Rev": "d082c80f7024e7fe8917c738da4854a4a45a023f"
+		},
+		{
+			"ImportPath": "golang.org/x/net/websocket",
+			"Rev": "cbcac7bb8415db9b6cb4d1ebab1dc9afbd688b97"
+		}
+	]
 }
