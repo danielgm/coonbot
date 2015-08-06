@@ -109,6 +109,6 @@ func getPostMessageParameters() slack.PostMessageParameters {
 	params := slack.PostMessageParameters{}
 	params.Username = "coonbot"
 	params.IconURL = "https://coonbot.herokuapp.com/raccoon.png"
-	params.UnfurlLinks = true
+	params.LinkNames = 1
 	return params
 }
