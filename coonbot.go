@@ -13,7 +13,7 @@ import (
 
 var (
 	slackToken     string
-	slackApiToken  string
+	slackApi       *slack.Slack
 	commandPattern *regexp.Regexp
 	chttp          *http.ServeMux
 )
@@ -22,8 +22,10 @@ func main() {
 	slackToken = os.Getenv("SLACK_TOKEN")
 	log.Printf("Using Slack token: %s", slackToken)
 
-	slackApiToken = os.Getenv("SLACK_API_TOKEN")
+	slackApiToken := os.Getenv("SLACK_API_TOKEN")
 	log.Printf("Using Slack API token: %s", slackApiToken)
+
+	slackApi = slack.New(slackApiToken)
 
 	commandPattern = regexp.MustCompile(`^\s*#([\w-]+)\s*$`)
 
@@ -40,7 +42,7 @@ func main() {
 
 func handler(res http.ResponseWriter, req *http.Request) {
 	log.Printf("req.URL.Path=%s\n", req.URL.Path)
-	if req.URL.Path == "/raccoon.png" || req.URL.Path == "/anotherchannel.png" {
+	if req.URL.Path == "/raccoon.png" || req.URL.Path == "/anotherchannel.jpg" {
 		chttp.ServeHTTP(res, req)
 	} else if req.URL.Path == "/hook" && req.Method == "POST" {
 		msg := parseRequest(req)
@@ -54,7 +56,8 @@ func handler(res http.ResponseWriter, req *http.Request) {
 					fmt.Fprintf(res, "{\"text\": \"Redirecting conversation to #%s\"}", channelName)
 					log.Printf("Redirecting conversation from %s (%s) to #%s", msg["channel_name"][0], msg["channel_id"][0], channelName)
 
-					sendRedirect(msg["channel_id"][0], channelName)
+					sendRedirectImage(msg["channel_id"][0])
+					sendRedirectMessage(msg["channel_id"][0], channelName)
 				} else {
 					fmt.Fprintf(res, "{\"text\": \"Usage: /redirect #channel-name\"}")
 				}
@@ -75,24 +78,36 @@ func parseRequest(req *http.Request) map[string][]string {
 	return msg
 }
 
-func sendRedirect(targetChannelId string, channelName string) {
-	api := slack.New(slackApiToken)
-	params := slack.PostMessageParameters{}
-	params.Text = "Message text"
-	params.Username = "coonbot"
-	params.IconURL = "https://coonbot.herokuapp.com/raccoon.png"
+func sendRedirectImage(targetChannelId string) {
+	params := getPostMessageParameters()
 
 	attachment := slack.Attachment{}
 	attachment.Fallback = "You're having a conversation that's best had in another channel."
-	attachment.ImageURL = "https://coonbot.herokuapp.com/anotherchannel.png"
-	attachment.ThumbURL = "https://coonbot.herokuapp.com/raccoon.png"
-	attachment.Text = ":rage:"
+	attachment.ImageURL = "https://coonbot.herokuapp.com/anotherchannel.jpg"
 
 	params.Attachments = []slack.Attachment{attachment}
-	actualChannelId, timestamp, err := api.PostMessage(targetChannelId, fmt.Sprintf(":door::arrow_right: #%s", channelName), params)
+	actualChannelId, timestamp, err := slackApi.PostMessage(targetChannelId, "", params)
 	if err != nil {
-		log.Printf("%s\n", err)
+		log.Printf("Failed to post image to channel: %s\n", err)
+		return
+	}
+	fmt.Printf("Image successfully sent to channel %s at %s", actualChannelId, timestamp)
+}
+
+func sendRedirectMessage(targetChannelId string, channelName string) {
+	params := getPostMessageParameters()
+
+	actualChannelId, timestamp, err := slackApi.PostMessage(targetChannelId, fmt.Sprintf(":door::arrow_right: #%s", channelName), params)
+	if err != nil {
+		log.Printf("Failed to post message to channel: %s\n", err)
 		return
 	}
 	fmt.Printf("Message successfully sent to channel %s at %s", actualChannelId, timestamp)
+}
+
+func getPostMessageParameters() slack.PostMessageParameters {
+	params := slack.PostMessageParameters{}
+	params.Username = "coonbot"
+	params.IconURL = "https://coonbot.herokuapp.com/raccoon.png"
+	return params
 }
