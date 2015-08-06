@@ -53,7 +53,6 @@ func handler(res http.ResponseWriter, req *http.Request) {
 				text := msg["text"][0]
 				if commandPattern.MatchString(text) {
 					channelName := commandPattern.FindStringSubmatch(text)[1]
-					fmt.Fprintf(res, "{}", channelName)
 					log.Printf("Redirecting conversation from %s (%s) to #%s", msg["channel_name"][0], msg["channel_id"][0], channelName)
 
 					sendRedirectImage(msg["channel_id"][0])
