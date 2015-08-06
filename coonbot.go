@@ -53,7 +53,7 @@ func handler(res http.ResponseWriter, req *http.Request) {
 				text := msg["text"][0]
 				if commandPattern.MatchString(text) {
 					channelName := commandPattern.FindStringSubmatch(text)[1]
-					fmt.Fprintf(res, "", channelName)
+					fmt.Fprintf(res, "{}", channelName)
 					log.Printf("Redirecting conversation from %s (%s) to #%s", msg["channel_name"][0], msg["channel_id"][0], channelName)
 
 					sendRedirectImage(msg["channel_id"][0])
@@ -86,7 +86,7 @@ func sendRedirectImage(targetChannelId string) {
 	attachment.ImageURL = "https://coonbot.herokuapp.com/anotherchannel.jpg"
 
 	params.Attachments = []slack.Attachment{attachment}
-	actualChannelId, timestamp, err := slackApi.PostMessage(targetChannelId, "{\"text\":\"Thank you for keeping our channels safe.\"}", params)
+	actualChannelId, timestamp, err := slackApi.PostMessage(targetChannelId, "", params)
 	if err != nil {
 		log.Printf("Failed to post image to channel: %s\n", err)
 		return
