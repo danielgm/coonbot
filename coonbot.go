@@ -53,7 +53,7 @@ func handler(res http.ResponseWriter, req *http.Request) {
 				text := msg["text"][0]
 				if commandPattern.MatchString(text) {
 					channelName := commandPattern.FindStringSubmatch(text)[1]
-					fmt.Fprintf(res, "{\"text\": \"Redirecting conversation to #%s\"}", channelName)
+					fmt.Fprintf(res, "", channelName)
 					log.Printf("Redirecting conversation from %s (%s) to #%s", msg["channel_name"][0], msg["channel_id"][0], channelName)
 
 					sendRedirectImage(msg["channel_id"][0])
@@ -109,5 +109,6 @@ func getPostMessageParameters() slack.PostMessageParameters {
 	params := slack.PostMessageParameters{}
 	params.Username = "coonbot"
 	params.IconURL = "https://coonbot.herokuapp.com/raccoon.png"
+	params.UnfurlLinks = true
 	return params
 }
