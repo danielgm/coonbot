@@ -80,6 +80,7 @@ func parseRequest(req *http.Request) map[string][]string {
 
 func sendRedirectImage(targetChannelId string) {
 	params := getPostMessageParameters()
+	params.EscapeText = false
 
 	attachment := slack.Attachment{}
 	attachment.Fallback = "You're having a conversation that's best had in another channel."
