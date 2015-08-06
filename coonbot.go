@@ -68,7 +68,7 @@ func parseRequest(req *http.Request) map[string][]string {
 	return msg
 }
 
-func sendRedirect(channelId string, channelName string) {
+func sendRedirect(targetChannelId string, channelName string) {
 	api := slack.New(slackApiToken)
 	params := slack.PostMessageParameters{}
 	attachment := slack.Attachment{
@@ -76,10 +76,10 @@ func sendRedirect(channelId string, channelName string) {
 		Text:    "some text",
 	}
 	params.Attachments = []slack.Attachment{attachment}
-	channelId, timestamp, err := api.PostMessage(channelName, "Some text", params)
+	actualChannelId, timestamp, err := api.PostMessage(targetChannelId, fmt.Sprint(":door: :arrow_right: #%s", channelName), params)
 	if err != nil {
 		log.Printf("%s\n", err)
 		return
 	}
-	fmt.Printf("Message successfully sent to channel %s at %s", channelId, timestamp)
+	fmt.Printf("Message successfully sent to channel %s at %s", actualChannelId, timestamp)
 }
