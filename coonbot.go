@@ -15,6 +15,7 @@ var (
 	slackToken     string
 	slackApiToken  string
 	commandPattern *regexp.Regexp
+	chttp          *http.ServeMux
 )
 
 func main() {
@@ -26,7 +27,10 @@ func main() {
 
 	commandPattern = regexp.MustCompile(`^\s*#([\w-]+)\s*$`)
 
-	http.HandleFunc("/hook", hook)
+	chttp = http.NewServeMux()
+	http.Handle("/", http.FileServer(http.Dir("./")))
+
+	http.HandleFunc("/", handler)
 	log.Println("Waiting for slash command...")
 	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	if err != nil {
@@ -34,8 +38,11 @@ func main() {
 	}
 }
 
-func hook(res http.ResponseWriter, req *http.Request) {
-	if req.Method == "POST" {
+func handler(res http.ResponseWriter, req *http.Request) {
+	log.Printf("req.URL.Path=%s\n", req.URL.Path)
+	if req.URL.Path == "/raccoon.png" || req.URL.Path == "/anotherchannel.png" {
+		chttp.ServeHTTP(res, req)
+	} else if req.URL.Path == "/hook" && req.Method == "POST" {
 		msg := parseRequest(req)
 		if msg != nil && msg["token"][0] == slackToken {
 			log.Printf("Slash command found! user=%s, channel=%s, text=\"%s\"", msg["user_name"][0], msg["channel_name"][0], msg["text"][0])
@@ -71,6 +78,10 @@ func parseRequest(req *http.Request) map[string][]string {
 func sendRedirect(targetChannelId string, channelName string) {
 	api := slack.New(slackApiToken)
 	params := slack.PostMessageParameters{}
+	params.Text = "Message text"
+	params.Username = "coonbot"
+	params.IconURL = "https://coonbot.herokuapp.com/raccoon.png"
+
 	attachment := slack.Attachment{
 		Pretext: "some pretext",
 		Text:    "some text",
