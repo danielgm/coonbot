@@ -45,6 +45,7 @@ func hook(res http.ResponseWriter, req *http.Request) {
 				if commandPattern.MatchString(text) {
 					channelName := commandPattern.FindStringSubmatch(text)[1]
 					fmt.Fprintf(res, "{\"text\": \"Redirecting conversation to #%s\"}", channelName)
+					log.Printf("Redirecting conversation from %s (%s) to #%s", msg["channel_name"][0], msg["channel_id"][0], channelName)
 
 					sendRedirect(msg["channel_id"][0], channelName)
 				} else {
