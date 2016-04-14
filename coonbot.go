@@ -42,7 +42,7 @@ func main() {
 
 func handler(res http.ResponseWriter, req *http.Request) {
 	log.Printf("req.URL.Path=%s\n", req.URL.Path)
-	if req.URL.Path == "/raccoon.png" || req.URL.Path == "/anotherchannel.jpg" {
+	if req.URL.Path == "/raccoon.png" {
 		chttp.ServeHTTP(res, req)
 	} else if req.URL.Path == "/hook" && req.Method == "POST" {
 		msg := parseRequest(req)
@@ -55,7 +55,6 @@ func handler(res http.ResponseWriter, req *http.Request) {
 					channelName := commandPattern.FindStringSubmatch(text)[1]
 					log.Printf("Redirecting conversation from %s (%s) to #%s", msg["channel_name"][0], msg["channel_id"][0], channelName)
 
-					sendRedirectImage(msg["channel_id"][0])
 					sendRedirectMessage(msg["channel_id"][0], channelName)
 				} else {
 					fmt.Fprintf(res, "{\"text\": \"Usage: /redirect #channel-name\"}")
@@ -75,22 +74,6 @@ func parseRequest(req *http.Request) map[string][]string {
 		return nil
 	}
 	return msg
-}
-
-func sendRedirectImage(targetChannelId string) {
-	params := getPostMessageParameters()
-
-	attachment := slack.Attachment{}
-	attachment.Fallback = "You're having a conversation that's best had in another channel."
-	attachment.ImageURL = "https://coonbot.herokuapp.com/anotherchannel.jpg"
-
-	params.Attachments = []slack.Attachment{attachment}
-	actualChannelId, timestamp, err := slackApi.PostMessage(targetChannelId, "", params)
-	if err != nil {
-		log.Printf("Failed to post image to channel: %s\n", err)
-		return
-	}
-	fmt.Printf("Image successfully sent to channel %s at %s", actualChannelId, timestamp)
 }
 
 func sendRedirectMessage(targetChannelId string, channelName string) {
