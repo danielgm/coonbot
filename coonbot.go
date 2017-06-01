@@ -57,7 +57,7 @@ func handler(res http.ResponseWriter, req *http.Request) {
 
 					sendRedirectMessage(msg["channel_id"][0], channelName)
 				} else {
-					fmt.Fprintf(res, "{\"text\": \"Usage: /redirect #channel-name\"}")
+					fmt.Fprintf(res, "{\"text\": \"Usage: /coonbot #channel-name\"}")
 				}
 			}
 		}
